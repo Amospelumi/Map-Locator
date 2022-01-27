@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Search
+from .forms import SearchForm
 
 # i install and import folium a python module to get the map i need
 import folium
@@ -8,7 +9,14 @@ import geocoder
 
 # Create your views here.
 def map(request):
-    # Country = request.POST.get("address")
+    if request.method == 'POST':
+        form = SearchForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('/')
+    else:
+        form = SearchForm()
+    
     Country = Search.objects.all().last()
     location = geocoder.osm(Country)
     lat = location.lat
@@ -24,6 +32,8 @@ def map(request):
 
     context = {
         'm':m,
+        'form':form,
     }
+
     return render(request, "index.html", context)
 
